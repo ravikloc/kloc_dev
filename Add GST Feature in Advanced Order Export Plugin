@@ -1,0 +1,88 @@
+// Paste Below code in Functions.php
+// Adding CGST SGST IGST in order Export Tax Breakup Advanced Order Export
+
+class WOE_add_product_shipping_taxes{
+	var $taxes = array("CGST","SGST","IGST");
+	
+	function __construct() {
+		add_filter('woe_get_order_fields', array($this,'add_order_fields'), 10, 1);
+		add_filter('woe_get_order_product_fields', array($this,'add_product_fields'), 10, 2);
+		
+		add_filter('woe_fetch_order', array($this,'fill_shipping_taxes'), 10, 2);
+		add_filter('woe_fetch_order_product',array($this,'fill_product_taxes'), 10, 5);
+	}	
+	
+	function add_order_fields($fields) {
+		global $wpdb;
+		foreach($this->taxes  as $tax) {
+			$fields['shipping_tax_amount_'.$tax] = array('label'=>"Shipping $tax Amount",'checked' => 1, 'segment'=>'cart','colname'=>"Shipping $tax Amount", 'format'=>'money');
+			$fields['shipping_tax_percentage_'.$tax] = array('label'=>"Shipping $tax Percentage",'checked' => 1, 'segment'=>'cart','colname'=>"Shipping $tax Percentage", 'format'=>'number');
+		}	
+		return $fields;
+	}
+	function add_product_fields($fields,$format) {
+		global $wpdb;
+		foreach($this->taxes  as $tax) {
+			$fields['tax_amount_'.$tax] = array('label'=>"Product $tax Amount",'checked' => 1, 'segment'=>'cart','colname'=>"Product $tax Amount", 'format'=>'money');
+			$fields['tax_percentage_'.$tax] = array('label'=>"Product $tax Percentage",'checked' => 1, 'segment'=>'cart','colname'=>"Product $tax Percentage", 'format'=>'number');
+		}	
+		return $fields;
+	}
+	
+	function fill_shipping_taxes($row, $order ) {
+		$shipping_taxes = $shipping_tax_rates = array();
+		$order_taxes = $order->get_taxes();
+		foreach($order->get_items('shipping') as $shipping) {
+			$tax_data = $shipping->get_taxes();
+			foreach($order_taxes as $tax_item) {
+				$tax_item_id    = $tax_item->get_rate_id();
+				$label = $tax_item->get_label() ;
+				$shipping_taxes[$label]  = isset( $tax_data['total'][ $tax_item_id ] ) ? $tax_data['total'][ $tax_item_id ] : 0;
+				$shipping_tax_rates[$label] = $shipping->get_total()>0 ? round($shipping_taxes[$label]/$shipping->get_total() * 100) : 0;
+			}	
+		}
+		
+		foreach($this->taxes  as $tax) {
+			if( isset($row['shipping_tax_amount_'.$tax]) )
+				$row['shipping_tax_amount_'.$tax] = wc_round_tax_total($this->find_tax_by_label($shipping_taxes,$tax));
+			if( isset($row['shipping_tax_percentage_'.$tax]) )
+				$row['shipping_tax_percentage_'.$tax] = $this->find_tax_by_label($shipping_tax_rates,$tax);
+		}	
+		
+		return $row;
+	}
+	
+	function fill_product_taxes($row, $order, $item, $product, $item_meta) { 
+		$product_taxes = $product_tax_rates = array();
+		$order_taxes = $order->get_taxes();
+		
+		$tax_data = $item->get_taxes();
+		foreach($order_taxes as $tax_item) {
+			$tax_item_id    = $tax_item->get_rate_id();
+			$label = $tax_item->get_label() ;
+			$product_taxes[$label]  = isset( $tax_data['total'][ $tax_item_id ] ) ? $tax_data['total'][ $tax_item_id ] : 0;
+			$product_tax_rates[$label] = $item->get_total()>0 ? round($product_taxes[$label]/$item->get_total() * 100) : 0;
+		}	
+		foreach($this->taxes  as $tax) {
+			if( isset($row['tax_amount_'.$tax]) )
+				$row['tax_amount_'.$tax] = wc_round_tax_total( $this->find_tax_by_label($product_taxes,$tax));
+			if( isset($row['tax_percentage_'.$tax]) )
+				$row['tax_percentage_'.$tax] = $this->find_tax_by_label($product_tax_rates,$tax);
+		}	
+		return $row;
+	}
+	
+	function find_tax_by_label($taxes,$label) {
+		$value = 0;
+		foreach($taxes as $key=>$v) {
+			if( strpos($key,$label) !== false) {
+				$value = $v;
+				break;
+			}
+		}
+		return $value;
+	}
+}	
+new WOE_add_product_shipping_taxes();
+
+// Adding CGST SGST IGST in order Export Tax Breakup Advanced Order Export End
