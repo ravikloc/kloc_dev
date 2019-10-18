@@ -1,0 +1,13 @@
+// Placeholder Checkout Page
+
+add_filter( 'woocommerce_checkout_fields' , 'override_billing_checkout_fields', 20, 1 );
+
+function override_billing_checkout_fields( $fields ) {
+    $fields['billing']['billing_first_name']['placeholder'] = 'First Name';
+    $fields['billing']['billing_last_name']['placeholder'] = 'Last Name';
+    $fields['billing']['billing_city']['placeholder'] = 'Town/City';
+    $fields['billing']['billing_postcode']['placeholder'] = 'Postcode / ZIP';
+    $fields['billing']['billing_phone']['placeholder'] = 'Phone';
+    $fields['billing']['billing_email']['placeholder'] = 'Email address';
+    return $fields;
+}
