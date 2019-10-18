@@ -1,0 +1,13 @@
+// Show Stock Only if quantity is less than 2
+
+function show_stock() {
+    global $product;
+    if ( $product->get_stock_quantity() ) { // if manage stock is enabled 
+    if ( number_format($product->get_stock_quantity(),0,'','') < 3 ) { // if stock is low
+    echo '<p class="stock in-stock custom-2-only">Only ' . number_format($product->get_stock_quantity(),0,'','') . ' left in stock!</div>';
+    } else {
+    // echo '<div class="remaining">' . number_format($product->get_stock_quantity(),0,'','') . ' left in stock</div>'; 
+            }
+        }
+    }
+    add_action('woocommerce_before_add_to_cart_form','show_stock', 10);
