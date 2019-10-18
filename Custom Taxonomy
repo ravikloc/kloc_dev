@@ -1,0 +1,32 @@
+
+// Adding Custom Taxonomy
+add_action( 'init', 'custom_taxonomy_Item' );
+function custom_taxonomy_Item()  {
+$labels = array(
+    'name'                       => 'Occasions',
+    'singular_name'              => 'Occasion',
+    'menu_name'                  => 'Occasion',
+    'all_items'                  => 'All Occasion',
+    'parent_item'                => 'Parent Occasion',
+    'parent_item_colon'          => 'Parent Occasion:',
+    'new_item_name'              => 'New Occasion Name',
+    'add_new_item'               => 'Add New Occasion',
+    'edit_item'                  => 'Edit Occasion',
+    'update_item'                => 'Update Occasion',
+    'separate_items_with_commas' => 'Separate Occasion with commas',
+    'search_items'               => 'Search Occasion',
+    'add_or_remove_items'        => 'Add or remove Occasion',
+    'choose_from_most_used'      => 'Choose from the most used Occasion',
+);
+$args = array(
+    'labels'                     => $labels,
+    'hierarchical'               => true,
+    'public'                     => true,
+    'show_ui'                    => true,
+    'show_admin_column'          => true,
+    'show_in_nav_menus'          => true,
+    'show_tagcloud'              => true,
+);
+register_taxonomy( 'occasion', 'product', $args );
+register_taxonomy_for_object_type( 'occasion', 'product' );
+}
